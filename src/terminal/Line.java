@@ -21,6 +21,14 @@ public class Line {
         return cells[index].getCharacter();
     }
 
+    public Cell getCell(int index) {
+        if (index < 0 || index >= cells.length) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Length: " + cells.length);
+        }
+
+        return cells[index];
+    }
+
     public void setChar(int index, char c) {
         if (index < 0 || index >= cells.length) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Length: " + cells.length);

@@ -50,6 +50,28 @@ public class TerminalBuffer {
         }
     }
 
+    public Cell getAttributesAtPositionScreen(int row, int col) {
+        if (row < 0 || row >= height || col < 0 || col >= width) {
+            throw new ScreenOutOfBoundsException(row, col);
+        }
+
+        return screen[row].getCell(col);
+    }
+
+    public Cell getAttributesAtPositionScrollback(int index, int col){
+        if(index < 0 || index >= scrollbackSize || col < 0 || col >= width){
+            throw new ScrollbackOutOfBoundsException(index, col);
+        }
+
+        Line line = scrollback[index];
+
+        if(line == null){
+            throw new ScrollbackEmptySlotException(index);
+        }
+
+        return line.getCell(col);
+    }
+
     private void scroll(){
         // push top line to scrollback
         addToScrollBack(screen[0]);
