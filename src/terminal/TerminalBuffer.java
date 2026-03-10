@@ -1,5 +1,9 @@
 package terminal;
 
+import exception.ScreenOutOfBoundsException;
+import exception.ScrollbackEmptySlotException;
+import exception.ScrollbackOutOfBoundsException;
+
 public class TerminalBuffer {
     private int width;
     private int height;
@@ -110,6 +114,30 @@ public class TerminalBuffer {
         }
         scrollbackSize = 0;
         scrollbackStart = 0;
+    }
+
+    public char getCharAtPositionScreen(int row, int col){
+        if(row < 0 || row >= height || col < 0 || col >= width){
+            throw new ScreenOutOfBoundsException(row, col);
+        }
+        return screen[row].getChar(col);
+    }
+
+    public char getCharAtPositionScrollback(int index, int col){
+        if(index < 0 || index >= scrollbackMaxSize){
+            throw new ScrollbackOutOfBoundsException(index, col);
+        }
+
+        Line line = scrollback[index];
+        if(line == null){
+            throw new ScrollbackEmptySlotException(index);
+        }
+
+        if(col < 0 || col >= line.length()){
+            throw new ScrollbackOutOfBoundsException(index, col);
+        }
+
+        return line.getChar(col);
     }
 
     public String scrollbackToString() {

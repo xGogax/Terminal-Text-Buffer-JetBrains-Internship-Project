@@ -24,7 +24,7 @@ public class TestTerminalBuffer {
 
         buffer.write("Overwrite");
 
-        buffer.clearScreenAndScrollBack();
+        System.out.println(buffer.getCharAtPositionScreen(2, 2));
         System.out.println(buffer);
     }
 }
