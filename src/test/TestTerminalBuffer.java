@@ -25,6 +25,7 @@ public class TestTerminalBuffer {
         buffer.write("Overwrite");
 
         System.out.println(buffer.getCharAtPositionScreen(2, 2));
+        System.out.println(buffer.getLineAtPositionScreen(0));
         System.out.println(buffer);
     }
 }

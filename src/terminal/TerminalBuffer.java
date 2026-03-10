@@ -37,6 +37,26 @@ public class TerminalBuffer {
         this.cursor = new Cursor(0, 0);
     }
 
+    public String getLineAtPositionScreen(int row){
+        if(row < 0 || row >= height){
+            throw new ScreenOutOfBoundsException(row, 0);
+        }
+        return screen[row].toString();
+    }
+
+    public String getLineAtPositionScrollback(int index){
+        if(index < 0 || index >= scrollbackSize){
+            throw new ScrollbackOutOfBoundsException(index, 0);
+        }
+
+        Line line = scrollback[index];
+        if(line == null){
+            throw new ScrollbackEmptySlotException(index);
+        }
+
+        return line.toString();
+    }
+
     private void addToScrollBack(Line line){
         if (scrollbackMaxSize == 0) return;
 
