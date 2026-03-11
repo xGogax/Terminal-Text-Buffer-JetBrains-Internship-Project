@@ -41,7 +41,15 @@ public class TerminalBuffer {
         if(row < 0 || row >= height){
             throw new ScreenOutOfBoundsException(row, 0);
         }
-        return screen[row].toString();
+
+        Line line = screen[row];
+        StringBuilder sb = new StringBuilder();
+
+        for(int i = 0; i < width; i++){
+            sb.append(line.getChar(i));
+        }
+
+        return sb.toString();
     }
 
     public String getLineAtPositionScrollback(int index){
@@ -54,7 +62,40 @@ public class TerminalBuffer {
             throw new ScrollbackEmptySlotException(index);
         }
 
-        return line.toString();
+        StringBuilder sb = new StringBuilder();
+
+        for(int i = 0; i < width; i++){
+            sb.append(line.getChar(i));
+        }
+
+        return sb.toString();
+    }
+
+    private void clampCursor() {
+        if (cursor.getRow() < 0) cursor.setRow(0);
+        if (cursor.getRow() >= height) cursor.setRow(height - 1);
+
+        if (cursor.getCol() < 0) cursor.setCol(0);
+        if (cursor.getCol() >= width) cursor.setCol(width - 1);
+
+    }
+
+    public void fillLine(int row, char c) {
+        if (row < 0 || row >= height) {
+            throw new ScreenOutOfBoundsException(row, 0);
+        }
+
+        Line line = screen[row];
+        System.out.println(line);
+
+        for (int col = 0; col < width; col++) {
+            Cell cell = line.getCell(col);
+
+            cell.setCharacter(c);
+            cell.setForegroundColor(currentForeground);
+            cell.setBackgroundColor(currentBackground);
+            cell.setStyleFlags(currentStyles);
+        }
     }
 
     private void addToScrollBack(Line line){
@@ -116,6 +157,8 @@ public class TerminalBuffer {
     }
 
     public void write(String text){
+        clampCursor();
+
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
 
@@ -128,12 +171,33 @@ public class TerminalBuffer {
                 newLine();
             }
 
-            screen[cursor.getRow()].setChar(cursor.getCol(), c);
-            screen[cursor.getRow()].setForeground(currentForeground, cursor.getCol(), cursor.getCol() + 1);
-            screen[cursor.getRow()].setBackground(currentBackground, cursor.getCol(), cursor.getCol() + 1);
-            screen[cursor.getRow()].setStyle(currentStyles, cursor.getCol(), cursor.getCol() + 1);
+            int charWidth = screen[cursor.getRow()].charWidth(c);
+            Line line = screen[cursor.getRow()];
 
-            cursor.moveRight();
+            if (charWidth == 1) {
+                line.setChar(cursor.getCol(), c);
+
+                line.setForeground(currentForeground, cursor.getCol(), cursor.getCol() + 1);
+                line.setBackground(currentBackground, cursor.getCol(), cursor.getCol() + 1);
+                line.setStyle(currentStyles, cursor.getCol(), cursor.getCol() + 1);
+
+                cursor.moveRight();
+
+            } else {
+
+                if (cursor.getCol() + charWidth > width) {
+                    newLine();
+                    line = screen[cursor.getRow()];
+                }
+
+                line.setWideChar(cursor.getCol(), c);
+
+                line.setForeground(currentForeground, cursor.getCol(), cursor.getCol() + charWidth);
+                line.setBackground(currentBackground, cursor.getCol(), cursor.getCol() + charWidth);
+                line.setStyle(currentStyles, cursor.getCol(), cursor.getCol() + charWidth);
+
+                cursor.setCol(cursor.getCol() + charWidth);
+            }
         }
     }
 
@@ -166,7 +230,7 @@ public class TerminalBuffer {
     }
 
     public char getCharAtPositionScrollback(int index, int col){
-        if(index < 0 || index >= scrollbackMaxSize){
+        if(index < 0 || index >= scrollbackSize){
             throw new ScrollbackOutOfBoundsException(index, col);
         }
 
@@ -203,7 +267,7 @@ public class TerminalBuffer {
         return sb.toString();
     }
 
-    public String screeenToString() {
+    public String screenToString() {
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < height; i++) {
@@ -220,6 +284,33 @@ public class TerminalBuffer {
         return cursor;
     }
 
+    public void setDefaultAttributes() {
+        this.currentForeground = Color.WHITE;
+        this.currentBackground = Color.BLACK;
+        this.currentStyles = new StyleFlag[0];
+    }
+
+    public Color getCurrentForeground () {
+        return currentForeground;
+    }
+    public void setCurrentForeground (Color color) {
+        this.currentForeground = color;
+    }
+
+    public Color getCurrentBackground () {
+        return currentBackground;
+    }
+    public void setCurrentBackground (Color color) {
+        this.currentBackground = color;
+    }
+
+    public StyleFlag[] getCurrentStyles () {
+        return currentStyles;
+    }
+    public void setCurrentStyles (StyleFlag[] styles) {
+        this.currentStyles = styles;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -232,7 +323,7 @@ public class TerminalBuffer {
         sb.append("-------------------------------------\n");
         sb.append("    SCREEN SECTION\n");
         sb.append("-------------------------------------\n");
-        sb.append(screeenToString());
+        sb.append(screenToString());
 
         return sb.toString();
     }

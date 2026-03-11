@@ -13,6 +13,15 @@ public class Line {
 
     public int length() { return cells.length; }
 
+    public int charWidth(char c) {
+        if (Character.UnicodeScript.of(c) == Character.UnicodeScript.HAN ||
+            Character.UnicodeScript.of(c) == Character.UnicodeScript.HIRAGANA ||
+            Character.UnicodeScript.of(c) == Character.UnicodeScript.KATAKANA) {
+            return 2;
+        }
+        return 1;
+    }
+
     public char getChar(int index) {
         if (index < 0 || index >= cells.length) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Length: " + cells.length);
@@ -35,6 +44,18 @@ public class Line {
         }
 
         cells[index].setCharacter(c);
+    }
+
+    public void setWideChar(int index, char c) {
+        if (index < 0 || index + 1 >= cells.length) {
+            throw new IndexOutOfBoundsException("Wide char out of bounds at " + index);
+        }
+
+        cells[index].setCharacter(c);
+        cells[index].setType(CellType.WIDE_START);
+
+        cells[index + 1].setCharacter('\0');
+        cells[index + 1].setType(CellType.WIDE_CONTINUE);
     }
 
     public void writeText(String text, int start) {

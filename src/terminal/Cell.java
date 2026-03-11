@@ -3,14 +3,19 @@ package terminal;
 public class Cell {
     private char character;
 
+    private CellType type = CellType.NORMAL;
+
     private Color foregroundColor = Color.WHITE;
     private Color backgroundColor = Color.BLACK;
     private StyleFlag[] styleFlags = new StyleFlag[0];
 
     public Cell(char character) { this.character = character; }
+    public Cell(char character, CellType type) { this.character = character; this.type = type; }
 
     @Override
     public String toString() {
+        if (type == CellType.WIDE_CONTINUE) return "";
+
         int fg = foregroundColor.getAnsiForeground();
         int bg = backgroundColor.getAnsiBackground();
 
@@ -38,5 +43,8 @@ public class Cell {
 
     public StyleFlag[] getStyleFlags() { return styleFlags; }
     public void setStyleFlags(StyleFlag... flags) { this.styleFlags = flags; }
+
+    public CellType getType() { return type; }
+    public void setType(CellType type) { this.type = type; }
     // </editor-fold>
 }
