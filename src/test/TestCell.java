@@ -55,5 +55,20 @@ public class TestCell {
                 i++;
             }
         }
+
+        System.out.println("-------------------------------------");
+        System.out.println("        WIDE CHARACTER TEST");
+        System.out.println("-------------------------------------");
+
+        // Test wide character handling
+        Cell wideCell = new Cell('你'); // CJK character
+        wideCell.setType(terminal.CellType.WIDE_START);
+        System.out.println("Wide char start: " + wideCell);
+        wideCell.setType(terminal.CellType.WIDE_CONTINUE);
+        System.out.println("Wide char continue (should be empty): " + wideCell);
+
+        // Test getters
+        assert wideCell.getCharacter() == '你';
+        assert wideCell.getType() == terminal.CellType.WIDE_CONTINUE;
     }
 }
