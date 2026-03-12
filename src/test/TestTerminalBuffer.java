@@ -36,6 +36,10 @@ public class TestTerminalBuffer {
         System.out.println(buffer.getCharAtPositionScreen(2, 2));
         System.out.println(buffer.getLineAtPositionScreen(0));
         System.out.println(buffer.getLineAtPositionScreen(3));
+
+        buffer.getCursor().setCol(2);
+        buffer.getCursor().setRow(0);
+        buffer.insert("Hi");
         System.out.println(buffer);
     }
 }

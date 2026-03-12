@@ -201,6 +201,34 @@ public class TerminalBuffer {
         }
     }
 
+    public void insert(String text) {
+        clampCursor();
+
+        for (int i = 0; i < text.length(); i++) {
+
+            if (cursor.getCol() >= width) {
+                newLine();
+            }
+
+            Line line = screen[cursor.getRow()];
+
+            // shift line right
+            for (int col = width - 1; col > cursor.getCol(); col--) {
+                Cell from = line.getCell(col - 1);
+                Cell to = line.getCell(col);
+
+                to.setCharacter(from.getCharacter());
+                to.setForegroundColor(from.getForegroundColor());
+                to.setBackgroundColor(from.getBackgroundColor());
+                to.setStyleFlags(from.getStyleFlags());
+                to.setType(from.getType());
+            }
+
+            // write char normally
+            write(String.valueOf(text.charAt(i)));
+        }
+    }
+
     public void insertEmptyLine(){
         scroll();
     }
