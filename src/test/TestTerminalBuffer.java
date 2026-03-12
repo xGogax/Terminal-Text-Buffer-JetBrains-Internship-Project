@@ -20,8 +20,10 @@ public class TestTerminalBuffer {
         buffer.write("Another line\n");
         buffer.write("Another line\n");
         buffer.write("Another line\n");
+        buffer.setCurrentForeground(Color.YELLOW);
         buffer.write("Another line\n");
         buffer.write("Another line\n");
+        buffer.setDefaultAttributes();
         buffer.write("Another line");
         buffer.getCursor().moveRight(6);
         buffer.write("你");
@@ -31,15 +33,19 @@ public class TestTerminalBuffer {
         buffer.getCursor().setCol(15);
 
         buffer.write("Overwrite");
-        buffer.fillLine(3, 'A');
 
         System.out.println(buffer.getCharAtPositionScreen(2, 2));
         System.out.println(buffer.getLineAtPositionScreen(0));
         System.out.println(buffer.getLineAtPositionScreen(3));
 
         buffer.getCursor().setCol(2);
-        buffer.getCursor().setRow(0);
+        buffer.getCursor().setRow(2);
         buffer.insert("Hi");
+        System.out.println(buffer);
+
+        System.out.println("---------------------------");
+        System.out.println("Resizing buffer to 20x10");
+        buffer.resize(5, 10);
         System.out.println(buffer);
     }
 }

@@ -7,7 +7,7 @@ import exception.ScrollbackOutOfBoundsException;
 public class TerminalBuffer {
     private int width;
     private int height;
-    private int scrollbackMaxSize;
+    private final int scrollbackMaxSize;
 
     private Line[] screen;
     private Line[] scrollback;
@@ -308,6 +308,95 @@ public class TerminalBuffer {
         return sb.toString();
     }
 
+    // <editor-fold defaultstate="collapsed" desc="BONUS: Resize Logic">
+    private Line[] getAllLines() {
+        Line[] all = new Line[scrollbackSize + height];
+
+        for (int i = 0; i < scrollbackSize; i++) {
+            int index = (scrollbackStart + i) % scrollbackMaxSize;
+            all[i] = scrollback[index];
+        }
+
+        for (int i = 0; i < height; i++) {
+            all[scrollbackSize + i] = screen[i];
+        }
+
+        return all;
+    }
+
+    private Cell[] flatten(Line[] lines) {
+
+        Cell[] result = new Cell[lines.length * width];
+        int k = 0;
+
+        for (Line line : lines) {
+            for (int c = 0; c < width; c++) {
+                result[k++] = line.getCell(c);
+            }
+        }
+
+        return result;
+    }
+
+    private Line[] buildLines(Cell[] cells, int newWidth) {
+        int newHeight = (cells.length + newWidth - 1) / newWidth;
+        Line[] lines = new Line[newHeight];
+
+        int k = 0;
+
+        for (int r = 0; r < newHeight; r++) {
+            lines[r] = new Line(newWidth);
+
+            for (int c = 0; c < newWidth && k < cells.length; c++) {
+                Cell cell = lines[r].getCell(c);
+                Cell old = cells[k++];
+
+                cell.setCharacter(old.getCharacter());
+                cell.setForegroundColor(old.getForegroundColor());
+                cell.setBackgroundColor(old.getBackgroundColor());
+                cell.setStyleFlags(old.getStyleFlags());
+                cell.setType(old.getType());
+            }
+        }
+
+        return lines;
+    }
+
+    public void resize(int newWidth, int newHeight) {
+
+        Line[] allLines = getAllLines();
+        Cell[] cells = flatten(allLines);
+
+        Line[] reflowed = buildLines(cells, newWidth);
+
+        this.width = newWidth;
+        this.height = newHeight;
+
+        screen = new Line[newHeight];
+        scrollback = new Line[scrollbackMaxSize];
+
+        scrollbackSize = 0;
+        scrollbackStart = 0;
+
+        int start = Math.max(0, reflowed.length - newHeight);
+
+        for (int i = 0; i < start; i++) {
+            addToScrollBack(reflowed[i]);
+        }
+
+        for (int i = 0; i < newHeight; i++) {
+            if (start + i < reflowed.length) {
+                screen[i] = reflowed[start + i];
+            } else {
+                screen[i] = new Line(newWidth);
+            }
+        }
+
+        clampCursor();
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Cursor getCursor() {
         return cursor;
     }
@@ -338,6 +427,7 @@ public class TerminalBuffer {
     public void setCurrentStyles (StyleFlag[] styles) {
         this.currentStyles = styles;
     }
+    // </editor-fold>
 
     @Override
     public String toString() {
