@@ -231,6 +231,7 @@ public class TerminalBuffer {
 
     public void insertEmptyLine(){
         scroll();
+        cursor.setCol(0);
     }
 
     public void clearScreen(){
